@@ -3,7 +3,7 @@ package Broker
 import (
 	"bytes"
 	"fmt"
-	"message-broker/messagebroker/Message"
+	Message2 "message-broker/Message"
 	"sync"
 )
 
@@ -13,7 +13,7 @@ type inMemoryBroker struct {
 	channels sync.Map // map[string] chan *bytes.Buffer
 }
 
-func (i *inMemoryBroker) Subscribe(channel string) (chan *bytes.Buffer, error) {
+func (i *inMemoryBroker) Subscribe(channel string) (<-chan *bytes.Buffer, error) {
 	var channelSubscribed chan *bytes.Buffer
 	ch, ok := i.channels.Load(channel)
 	if ok {
@@ -36,7 +36,7 @@ func (i *inMemoryBroker) Unsubscribe(channel string) error {
 	return fmt.Errorf("cannot find channel %s", channel)
 }
 
-func (i *inMemoryBroker) Publish(channel string, message Message.IMessage) error {
+func (i *inMemoryBroker) Publish(channel string, message Message2.IMessage) error {
 	ch, ok := i.channels.Load(channel)
 	if ok {
 		actualChan := ch.(chan *bytes.Buffer)

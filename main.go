@@ -1,22 +1,26 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"message-broker/Broker"
 	"message-broker/Log"
-	"message-broker/messagebroker/Broker"
-	"message-broker/messagebroker/Message"
-	"message-broker/messagebroker/Publisher"
-	"message-broker/messagebroker/Subscriber"
+	"message-broker/Message"
+	"message-broker/Publisher"
+	"message-broker/Subscriber"
 	"time"
 )
 
 const (
-	count       = 1
-	channelName = "channel"
+	count     = 1
+	topicName = "channel"
 )
 
 func main() {
-	brok, err := Broker.Create(Broker.InMemory)
+	brokerType := flag.String("brokerType", Broker.Inmemory, "Broker Type")
+	flag.Parse()
+
+	brok, err := Broker.Create(*brokerType)
 	logError(err)
 
 	go func() {
@@ -25,7 +29,7 @@ func main() {
 				"Generated Message -> %s at %d", time.Now().String(), time.Now().UnixNano())
 			messageWrapper := Message.Create([]byte(message))
 			pub := Publisher.Create(brok)
-			pub = pub.SetContext(channelName, messageWrapper)
+			pub = pub.SetContext(topicName, messageWrapper)
 			err = pub.Publish()
 			logError(err)
 		}
@@ -34,13 +38,13 @@ func main() {
 	var subs []Subscriber.ISubscriber
 	for i := 0; i < count; i++ {
 		subs = append(subs, Subscriber.Create(brok))
-		err = subs[i].Subscribe(channelName)
+		err = subs[i].Subscribe(topicName)
 		logError(err)
 	}
 
 	defer func() {
 		for _, sub := range subs {
-			err = sub.Unsubscribe(channelName)
+			err = sub.Unsubscribe(topicName)
 			logError(err)
 		}
 		err = brok.Close()
@@ -48,8 +52,8 @@ func main() {
 	}()
 }
 
-func logError(err error){
-	if err!=nil{
+func logError(err error) {
+	if err != nil {
 		Log.Current().LogError(err)
 	}
 }

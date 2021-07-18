@@ -4,18 +4,18 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/google/uuid"
+	Broker2 "message-broker/Broker"
 	"message-broker/Log"
-	"message-broker/messagebroker/Broker"
-	"message-broker/messagebroker/Message"
+	Message2 "message-broker/Message"
 )
 
 type subscriber struct {
 	id      uuid.UUID
-	broker  Broker.IBroker
+	broker  Broker2.IBroker
 	channel <-chan *bytes.Buffer
 }
 
-func Create(broker Broker.IBroker) ISubscriber {
+func Create(broker Broker2.IBroker) ISubscriber {
 	return subscriber{
 		broker: broker,
 		id:     uuid.New(),
@@ -29,7 +29,7 @@ func (s subscriber) Subscribe(channel string) error {
 		Log.Current().LogInfo(
 			fmt.Sprintf("Subscriber Id (%s), subscribe started", s.id))
 		for mes := range s.channel {
-			message := Message.Create(mes.Bytes())
+			message := Message2.Create(mes.Bytes())
 			Log.Current().LogInfo(
 				fmt.Sprintf("SubscriberId (%s), received message : %s\n", s.id, message))
 		}
