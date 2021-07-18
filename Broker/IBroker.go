@@ -2,12 +2,13 @@ package Broker
 
 import (
 	"bytes"
-	Message2 "message-broker/Message"
+	"message-broker/Config"
+	"message-broker/Message"
 )
 
 type IBroker interface {
-	Publish(channel string, message Message2.IMessage) error
-	Subscribe(channel string) (<-chan *bytes.Buffer, error)
-	Unsubscribe(channel string) error
+	Publish(message Message.IMessage, config Config.IConfig) error
+	Subscribe(config Config.IConfig) (<-chan *bytes.Buffer, error)
+	Unsubscribe(config Config.IConfig) error
 	Close() error
 }

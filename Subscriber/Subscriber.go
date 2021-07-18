@@ -5,26 +5,29 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"message-broker/Broker"
+	"message-broker/Config"
 	"message-broker/Log"
 	"message-broker/Message"
 )
 
 type subscriber struct {
+	config Config.IConfig
 	id      uuid.UUID
 	broker  Broker.IBroker
 	channel <-chan *bytes.Buffer
 }
 
-func Create(broker Broker.IBroker) ISubscriber {
+func Create(broker Broker.IBroker, config Config.IConfig) ISubscriber {
 	return subscriber{
 		broker: broker,
 		id:     uuid.New(),
+		config: config,
 	}
 }
 
-func (s subscriber) Subscribe(channel string) error {
+func (s subscriber) Subscribe() error {
 	var err error
-	s.channel, err = s.broker.Subscribe(channel)
+	s.channel, err = s.broker.Subscribe(s.config)
 	if err == nil {
 		Log.Current().LogInfo(
 			fmt.Sprintf("SubscriberId (%s), subscribe started", s.id))
@@ -37,6 +40,6 @@ func (s subscriber) Subscribe(channel string) error {
 	return err
 }
 
-func (s subscriber) Unsubscribe(channel string) error {
-	return s.broker.Unsubscribe(channel)
+func (s subscriber) Unsubscribe() error {
+	return s.broker.Unsubscribe(s.config)
 }

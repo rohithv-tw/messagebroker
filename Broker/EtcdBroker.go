@@ -2,24 +2,25 @@ package Broker
 
 import (
 	"bytes"
-	Message2 "message-broker/Message"
+	"message-broker/Config"
+	"message-broker/Message"
 )
 
 type etcdBroker struct {
 }
 
-func (etcd *etcdBroker) Subscribe(channel string) (<-chan *bytes.Buffer, error) {
-	panic("Implement me")
-}
-
-func (etcd *etcdBroker) Publish(channel string, message Message2.IMessage) error {
+func (e *etcdBroker) Publish(message Message.IMessage, config Config.IConfig) error {
 	panic("implement me")
 }
 
-func (etcd *etcdBroker) Unsubscribe(channel string) error {
+func (e *etcdBroker) Subscribe(Config.IConfig) (<-chan *bytes.Buffer, error) {
 	panic("implement me")
 }
 
-func (etcd *etcdBroker) Close() error {
+func (e *etcdBroker) Unsubscribe(Config.IConfig) error {
+	panic("implement me")
+}
+
+func (e *etcdBroker) Close() error {
 	panic("implement me")
 }

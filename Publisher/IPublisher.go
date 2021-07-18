@@ -5,6 +5,6 @@ import (
 )
 
 type IPublisher interface {
-	SetContext(channel string, message Message.IMessage) IPublisher
+	SetMessage(message Message.IMessage) IPublisher
 	Publish() error
 }
