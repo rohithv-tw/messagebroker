@@ -1,10 +1,10 @@
 package Publisher
 
 import (
-	Message2 "message-broker/Message"
+	"message-broker/Message"
 )
 
 type IPublisher interface {
-	SetContext(channel string, message Message2.IMessage) IPublisher
+	SetContext(channel string, message Message.IMessage) IPublisher
 	Publish() error
 }
