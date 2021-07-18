@@ -2,7 +2,6 @@ package Config
 
 import (
 	"fmt"
-	"message-broker/Broker"
 )
 
 type config struct {
@@ -14,9 +13,9 @@ const topic = "channel"
 
 func Create(brokerType string) (IConfig, error) {
 	switch brokerType {
-	case Broker.Inmemory:
+	case Inmemory:
 		return &config{host: "", topic: topic}, nil
-	case Broker.Etcd:
+	case Etcd:
 		return &config{host: "192.168.99.100:2379", topic: topic}, nil
 	default:
 		return nil, fmt.Errorf("unsupported Broker type = %d", brokerType)

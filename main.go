@@ -15,7 +15,7 @@ import (
 const count = 1
 
 func main() {
-	brokerType := flag.String("brokerType", Broker.Inmemory, "Broker Type")
+	brokerType := flag.String("brokerType", Config.Inmemory, "Broker Type")
 	flag.Parse()
 
 	config, err := Config.Create(*brokerType)

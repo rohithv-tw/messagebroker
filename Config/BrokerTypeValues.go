@@ -1,4 +1,4 @@
-package Broker
+package Config
 
 const (
 	Inmemory = "inmemory"
