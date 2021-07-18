@@ -2,6 +2,7 @@ package Config
 
 import (
 	"fmt"
+	"strings"
 )
 
 type config struct {
@@ -12,6 +13,7 @@ type config struct {
 const topic = "channel"
 
 func Create(brokerType string) (IConfig, error) {
+	brokerType = strings.ToLower(brokerType)
 	switch brokerType {
 	case Inmemory:
 		return &config{host: "", topic: topic}, nil

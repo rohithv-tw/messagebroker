@@ -17,6 +17,6 @@ func Create(brokerType string) (IBroker, error) {
 	case Config.Etcd:
 		return &etcdBroker{}, nil
 	default:
-		return nil, fmt.Errorf("unsupported Broker type = %d", brokerType)
+		return nil, fmt.Errorf("unsupported Broker type = %s", brokerType)
 	}
 }

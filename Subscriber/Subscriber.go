@@ -1,7 +1,6 @@
 package Subscriber
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/google/uuid"
 	"message-broker/Broker"
@@ -12,9 +11,8 @@ import (
 
 type subscriber struct {
 	config Config.IConfig
-	id      uuid.UUID
-	broker  Broker.IBroker
-	channel <-chan *bytes.Buffer
+	id     uuid.UUID
+	broker Broker.IBroker
 }
 
 func Create(broker Broker.IBroker, config Config.IConfig) ISubscriber {
@@ -26,12 +24,21 @@ func Create(broker Broker.IBroker, config Config.IConfig) ISubscriber {
 }
 
 func (s subscriber) Subscribe() error {
-	var err error
-	s.channel, err = s.broker.Subscribe(s.config)
+	switch s.broker.GetType() {
+	case Config.Inmemory:
+		return s.SubscribeInMemory()
+	case Config.Etcd:
+		return s.SubscribeEtcd()
+	}
+	return fmt.Errorf("unsupported Broker type = %s\n", s.broker.GetType())
+}
+
+func (s *subscriber) SubscribeInMemory() error {
+	channel, err := s.broker.SubscribeInMemory(s.config)
 	if err == nil {
 		Log.Current().LogInfo(
 			fmt.Sprintf("SubscriberId (%s), subscribe started", s.id))
-		for mes := range s.channel {
+		for mes := range channel {
 			message := Message.Create(mes.Bytes())
 			Log.Current().LogInfo(
 				fmt.Sprintf("SubscriberId (%s), received message : %s\n", s.id, message))
@@ -42,4 +49,19 @@ func (s subscriber) Subscribe() error {
 
 func (s subscriber) Unsubscribe() error {
 	return s.broker.Unsubscribe(s.config)
+}
+
+func (s subscriber) SubscribeEtcd() error {
+	channel := s.broker.SubscribeEtcd(s.config)
+	Log.Current().LogInfo(
+		fmt.Sprintf("SubscriberId (%s), subscribe started", s.id))
+	for response := range channel {
+		for _, event := range response.Events {
+			// message := Message.Create(event.Kv.Value)
+			Log.Current().LogInfo(
+				fmt.Sprintf("SubscriberId (%s), %s executed on %q with value %q\n",
+					s.id, event.Type, event.Kv.Key, event.Kv.Value))
+		}
+	}
+	return nil
 }

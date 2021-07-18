@@ -10,7 +10,7 @@ import (
 )
 
 type publisher struct {
-	config Config.IConfig
+	config  Config.IConfig
 	message Message.IMessage
 	broker  Broker.IBroker
 	id      uuid.UUID
