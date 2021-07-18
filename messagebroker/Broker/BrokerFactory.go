@@ -5,23 +5,23 @@ import (
 	"sync"
 )
 
-var brokerMap sync.Map
+var instance IBroker
+var once sync.Once
 
 func Create(brokerType int) (IBroker, error) {
-	result, _ := brokerMap.LoadOrStore(brokerType, func() IBroker {
-		res, _ := createInstance(brokerType)
-		return res
-	}())
-	return result.(IBroker), nil
-}
-
-func createInstance(brokerType int) (IBroker, error) {
-	switch brokerType {
-	case InMemory:
-		return &inMemoryBroker{
-			channels: sync.Map{},
-		}, nil
-	default:
-		return nil, fmt.Errorf("unsupported Broker type = %d", brokerType)
-	}
+	var err error = nil
+	once.Do(func() {
+		switch brokerType {
+		case InMemory:
+			instance = &inMemoryBroker{
+				channels: sync.Map{},
+			}
+		case Etcd:{
+			instance = &etcdBroker{}
+		}
+		default:
+			err = fmt.Errorf("unsupported Broker type = %d", brokerType)
+		}
+	})
+	return instance, err
 }

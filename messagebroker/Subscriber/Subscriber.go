@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/google/uuid"
-	"log"
+	"message-broker/Log"
 	"message-broker/messagebroker/Broker"
+	"message-broker/messagebroker/Message"
 )
 
 type subscriber struct {
@@ -25,9 +26,12 @@ func (s subscriber) Subscribe(channel string) error {
 	var err error
 	s.channel, err = s.broker.Subscribe(channel)
 	if err == nil {
-		log.Printf("INFO: subscribe (%s) message started", s.id)
+		Log.Current().LogInfo(
+			fmt.Sprintf("Subscriber Id (%s), subscribe started", s.id))
 		for mes := range s.channel {
-			fmt.Printf("Subsciber (%s) Received message : %s\n", s.id, mes.String())
+			message := Message.Create(mes.Bytes())
+			Log.Current().LogInfo(
+				fmt.Sprintf("SubscriberId (%s), received message : %s\n", s.id, message))
 		}
 	}
 	return err
