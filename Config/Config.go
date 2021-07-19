@@ -18,7 +18,7 @@ func Create(brokerType string) (IConfig, error) {
 	case Inmemory:
 		return &config{host: "", topic: topic}, nil
 	case Etcd:
-		return &config{host: "192.168.99.100:2379", topic: topic}, nil
+		return &config{host: "127.0.0.1:2379", topic: topic}, nil
 	default:
 		return nil, fmt.Errorf("unsupported Broker type = %d", brokerType)
 	}

@@ -57,7 +57,6 @@ func (s subscriber) SubscribeEtcd() error {
 		fmt.Sprintf("SubscriberId (%s), subscribe started", s.id))
 	for response := range channel {
 		for _, event := range response.Events {
-			// message := Message.Create(event.Kv.Value)
 			Log.Current().LogInfo(
 				fmt.Sprintf("SubscriberId (%s), %s executed on %q with value %q\n",
 					s.id, event.Type, event.Kv.Key, event.Kv.Value))

@@ -3,7 +3,7 @@ package Broker
 import (
 	"bytes"
 	"fmt"
-	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.etcd.io/etcd/client/v3"
 	"message-broker/Config"
 	"message-broker/Log"
 	"message-broker/Message"
@@ -32,7 +32,7 @@ func (i *inMemoryBroker) SubscribeInMemory(config Config.IConfig) (<-chan *bytes
 	return channelSubscribed, nil
 }
 
-func (i *inMemoryBroker) SubscribeEtcd(config Config.IConfig) clientv3.WatchChan {
+func (i *inMemoryBroker) SubscribeEtcd(Config.IConfig) clientv3.WatchChan {
 	Log.Current().LogWarn("Not implemented SubscribeEtcd for InMemoryBroker")
 	return nil
 }
@@ -58,7 +58,7 @@ func (i *inMemoryBroker) Unsubscribe(config Config.IConfig) error {
 	return fmt.Errorf("cannot find channel %s", config.GetTopic())
 }
 
-func (i *inMemoryBroker) Close() error {
+func (i *inMemoryBroker) Close(Config.IConfig) error {
 	i.channels.Range(func(key interface{}, value interface{}) bool {
 		ch := value.(chan *bytes.Buffer)
 		close(ch)

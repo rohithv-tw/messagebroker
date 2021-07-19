@@ -3,17 +3,16 @@ package Broker
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"go.etcd.io/etcd/client/v3"
 	"message-broker/Config"
 	"message-broker/Log"
 	"message-broker/Message"
-	"sync"
 	"time"
 )
 
 type etcdBroker struct {
-	client *clientv3.Client
 }
 
 func (e *etcdBroker) GetType() string {
@@ -26,61 +25,84 @@ func (e *etcdBroker) SubscribeInMemory(Config.IConfig) (<-chan *bytes.Buffer, er
 }
 
 func (e *etcdBroker) SubscribeEtcd(config Config.IConfig) clientv3.WatchChan {
-	e.initialiseClient(config, "subscribe()")
-	return e.client.Watch(context.Background(), config.GetTopic())
-}
-
-var mutex sync.Mutex
-
-func (e *etcdBroker) initialiseClient(config Config.IConfig, event string) {
-	mutex.Lock()
-	defer mutex.Unlock()
-	var err error
-	e.client, err = clientv3.New(clientv3.Config{
-		Endpoints:   []string{"http://" + config.GetHost()},
-		DialTimeout: 5 * time.Second,
-	})
-	if err != nil {
-		Log.Current().LogError(err)
-	} else {
-		Log.Current().LogInfo(fmt.Sprintf("connected to etcd %s on %s", e.client.Endpoints(), event))
-	}
-}
-
-func (e *etcdBroker) Publish(message Message.IMessage, config Config.IConfig) error {
-	e.initialiseClient(config, "publish()")
+	client, err := e.initialiseClient(config.GetHost())
 	defer func(client *clientv3.Client) {
 		err := client.Close()
 		if err != nil {
 			Log.Current().LogError(err)
 		}
-	}(e.client)
-	res, err := e.client.Put(context.Background(), config.GetTopic(), message.CreateMessage().String())
+	}(client)
 	if err != nil {
 		Log.Current().LogError(err)
 	} else {
-		Log.Current().LogInfo(res.PrevKv.String())
+		Log.Current().LogInfo(
+			fmt.Sprintf("connected to etcd %s on %s", client.Endpoints(), "subscribe()"))
+	}
+	return client.Watch(context.Background(), config.GetTopic())
+}
+
+func (e *etcdBroker) initialiseClient(host string) (*clientv3.Client, error) {
+	return clientv3.New(clientv3.Config{
+		Endpoints:   []string{"http://" + host},
+		DialTimeout: 5 * time.Second,
+	})
+}
+
+func (e *etcdBroker) Publish(message Message.IMessage, config Config.IConfig) error {
+	client, err := e.initialiseClient(config.GetHost())
+	defer func(client *clientv3.Client) {
+		err := client.Close()
+		if err != nil {
+			Log.Current().LogError(err)
+		}
+	}(client)
+	if err != nil {
+		Log.Current().LogError(err)
+	} else {
+		Log.Current().LogInfo(
+			fmt.Sprintf("connected to etcd %s on %s", client.Endpoints(), "publish()"))
+	}
+	var res *clientv3.PutResponse
+	res, err = client.Put(context.Background(), config.GetTopic(), message.CreateMessage().String())
+	if err != nil {
+		Log.Current().LogError(err)
+	} else {
+		serializedData, _ := json.Marshal(res)
+		Log.Current().LogInfo(string(serializedData))
 	}
 	return nil
 }
 
 func (e *etcdBroker) Unsubscribe(config Config.IConfig) error {
-	e.initialiseClient(config, "unsubscribe()")
+	client, err := e.initialiseClient(config.GetHost())
 	defer func(client *clientv3.Client) {
 		err := client.Close()
 		if err != nil {
 			Log.Current().LogError(err)
 		}
-	}(e.client)
+	}(client)
+	if err != nil {
+		Log.Current().LogError(err)
+	} else {
+		Log.Current().LogInfo(
+			fmt.Sprintf("connected to etcd %s on %s", client.Endpoints(), "Unsubscribe()"))
+	}
 	return nil
 }
 
-func (e *etcdBroker) Close() error {
-	func(client *clientv3.Client) {
+func (e *etcdBroker) Close(config Config.IConfig) error {
+	client, err := e.initialiseClient(config.GetHost())
+	defer func(client *clientv3.Client) {
 		err := client.Close()
 		if err != nil {
 			Log.Current().LogError(err)
 		}
-	}(e.client)
+	}(client)
+	if err != nil {
+		Log.Current().LogError(err)
+	} else {
+		Log.Current().LogInfo(
+			fmt.Sprintf("connected to etcd %s on %s", client.Endpoints(), "close()"))
+	}
 	return nil
 }

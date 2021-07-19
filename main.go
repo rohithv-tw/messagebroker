@@ -15,7 +15,7 @@ import (
 const count = 1
 
 func main() {
-	brokerType := flag.String("brokerType", Config.Inmemory, "Broker Type")
+	brokerType := flag.String("brokerType", Config.Etcd, "Broker Type")
 	flag.Parse()
 
 	config, err := Config.Create(*brokerType)
@@ -48,7 +48,7 @@ func main() {
 			err = sub.Unsubscribe()
 			logErrorWhenApplicable(err)
 		}
-		err = brok.Close()
+		err = brok.Close(config)
 		logErrorWhenApplicable(err)
 	}()
 }

@@ -13,5 +13,5 @@ type IBroker interface {
 	SubscribeInMemory(config Config.IConfig) (<-chan *bytes.Buffer, error)
 	SubscribeEtcd(config Config.IConfig) clientv3.WatchChan
 	Unsubscribe(config Config.IConfig) error
-	Close() error
+	Close(config Config.IConfig) error
 }
